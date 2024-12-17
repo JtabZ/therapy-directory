@@ -54,7 +54,7 @@ export default function TherapyDirectory() {
         const data = rows.slice(1).map(row => {
           const values = row.split(',');
           return headers.reduce((obj, header, index) => {
-            obj[header.trim()] = values[index]?.trim() || '';
+            obj[header.trim()] = (values[index]?.trim() || '').replace(/^"|"$/g, '');
             return obj;
           }, {});
         });
