@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/therapy-directory/static/css/main.9a4c9281.css",
-    "main.js": "/therapy-directory/static/js/main.6bc52b53.js",
+    "main.js": "/therapy-directory/static/js/main.93f5dafa.js",
     "static/js/488.5c121470.chunk.js": "/therapy-directory/static/js/488.5c121470.chunk.js",
     "index.html": "/therapy-directory/index.html",
     "main.9a4c9281.css.map": "/therapy-directory/static/css/main.9a4c9281.css.map",
-    "main.6bc52b53.js.map": "/therapy-directory/static/js/main.6bc52b53.js.map",
+    "main.93f5dafa.js.map": "/therapy-directory/static/js/main.93f5dafa.js.map",
     "488.5c121470.chunk.js.map": "/therapy-directory/static/js/488.5c121470.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9a4c9281.css",
-    "static/js/main.6bc52b53.js"
+    "static/js/main.93f5dafa.js"
   ]
 }
