@@ -14,8 +14,8 @@
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build": "NODE_ENV=production npm run build:css && react-scripts build",
-    "build:css": "tailwindcss -i src/index.css -o src/styles.css --minify"
+    "build2": "NODE_ENV=production npm run build:css && react-scripts build",
+    "build:css": "tailwindcss -i src/index.css -o src/styles.css --minify",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
