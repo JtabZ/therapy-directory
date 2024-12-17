@@ -1,25 +1,167 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
 
-function App() {
+// Function to process therapist data from CSV
+const processTherapists = (data) => {
+  const therapists = new Map();
+  
+  data.forEach(row => {
+    const name = row['Therapist Name']?.trim();
+    const specialty = row['Specialty Group']?.trim();
+    const location = row['Clinic 1 Fixed']?.trim();
+    const address = row['Address']?.trim();
+    
+    if (name && specialty && location) {  // Only process rows with required data
+      if (!therapists.has(name)) {
+        therapists.set(name, {
+          name,
+          specialties: new Set([specialty]),
+          location,
+          address
+        });
+      } else {
+        therapists.get(name).specialties.add(specialty);
+      }
+    }
+  });
+  
+  return Array.from(therapists.values()).map(t => ({
+    ...t,
+    specialties: Array.from(t.specialties)
+  }));
+};
+
+export default function TherapyDirectory() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+  const [selectedLocation, setSelectedLocation] = useState('All');
+  const [therapists, setTherapists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQZ8OCh9Affy-AmVnhmNA0JJPbcx1ABir0vzNIk5qTcfrWyqNx3QSh_l9TIMrT-6QWoHxWezITtrNn3/pub?output=csv');
+        const text = await response.text();
+        
+        // Parse CSV
+        const rows = text.split('\n');
+        const headers = rows[0].split(',');
+        const data = rows.slice(1).map(row => {
+          const values = row.split(',');
+          return headers.reduce((obj, header, index) => {
+            obj[header.trim()] = values[index]?.trim() || '';
+            return obj;
+          }, {});
+        });
+        
+        const processedData = processTherapists(data);
+        setTherapists(processedData);
+      } catch (err) {
+        setError('Error loading therapist data');
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const specialties = ['All', ...new Set(therapists.flatMap(t => t.specialties))].sort();
+  const locations = ['All', ...new Set(therapists.map(t => t.location))].sort();
+
+  const filteredTherapists = therapists.filter(therapist => {
+    const matchesSearch = therapist.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSpecialty = selectedSpecialty === 'All' || therapist.specialties.includes(selectedSpecialty);
+    const matchesLocation = selectedLocation === 'All' || therapist.location === selectedLocation;
+    return matchesSearch && matchesSpecialty && matchesLocation;
+  });
+
+  if (loading) return (
+    <div className="w-full max-w-6xl mx-auto p-6">
+      <div className="animate-pulse text-center">Loading therapist directory...</div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="w-full max-w-6xl mx-auto p-6">
+      <div className="text-red-500 text-center">{error}</div>
+    </div>
+  );
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold mb-6">Therapy Directory</h1>
+        
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search therapists..."
+              className="pl-10 pr-4 py-2 w-full border rounded-lg"
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <select 
+            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px]"
+            onChange={(e) => setSelectedSpecialty(e.target.value)}
+            value={selectedSpecialty}
+          >
+            {specialties.map(specialty => (
+              <option key={specialty} value={specialty}>{specialty}</option>
+            ))}
+          </select>
+          
+          <select 
+            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px]"
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            value={selectedLocation}
+          >
+            {locations.map(location => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialties</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredTherapists.map((therapist, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-medium text-gray-900">{therapist.name}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {therapist.specialties.map((specialty, idx) => (
+                        <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{therapist.location}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-500">{therapist.address}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default App;
