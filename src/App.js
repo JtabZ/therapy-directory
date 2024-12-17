@@ -10,14 +10,16 @@ const processTherapists = (data) => {
     const specialty = row['Specialty Group']?.trim();
     const location = row['Clinic 1 Fixed']?.trim();
     const address = row['Address']?.trim();
+    const notes = row['Notes']?.trim(); // Add notes field
     
-    if (name && specialty && location) {  // Only process rows with required data
+    if (name && specialty && location) {
       if (!therapists.has(name)) {
         therapists.set(name, {
           name,
           specialties: new Set([specialty]),
           location,
-          address
+          address,
+          notes // Include notes in therapist data
         });
       } else {
         therapists.get(name).specialties.add(specialty);
@@ -82,20 +84,27 @@ export default function TherapyDirectory() {
 
   if (loading) return (
     <div className="w-full max-w-6xl mx-auto p-6">
-      <div className="animate-pulse text-center">Loading therapist directory...</div>
+      <div className="flex items-center justify-center space-x-2">
+        <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"></div>
+        <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce delay-100"></div>
+        <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce delay-200"></div>
+      </div>
+      <div className="text-center mt-4 text-gray-600">Loading therapist directory...</div>
     </div>
   );
   
   if (error) return (
     <div className="w-full max-w-6xl mx-auto p-6">
-      <div className="text-red-500 text-center">{error}</div>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-center">
+        {error}
+      </div>
     </div>
   );
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-6">Therapy Directory</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">Therapy Directory</h1>
         
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="relative flex-1 min-w-[200px]">
@@ -103,13 +112,13 @@ export default function TherapyDirectory() {
             <input
               type="text"
               placeholder="Search therapists..."
-              className="pl-10 pr-4 py-2 w-full border rounded-lg"
+              className="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
           <select 
-            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px]"
+            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             onChange={(e) => setSelectedSpecialty(e.target.value)}
             value={selectedSpecialty}
           >
@@ -119,7 +128,7 @@ export default function TherapyDirectory() {
           </select>
           
           <select 
-            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px]"
+            className="px-4 py-2 border rounded-lg flex-1 min-w-[200px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             onChange={(e) => setSelectedLocation(e.target.value)}
             value={selectedLocation}
           >
@@ -129,10 +138,10 @@ export default function TherapyDirectory() {
           </select>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50">
+              <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialties</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
@@ -141,14 +150,20 @@ export default function TherapyDirectory() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredTherapists.map((therapist, index) => (
-                <tr key={index} className="hover:bg-gray-50">
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{therapist.name}</div>
+                    {therapist.notes && (
+                      <div className="text-sm text-blue-600 mt-1">{therapist.notes}</div>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
                       {therapist.specialties.map((specialty, idx) => (
-                        <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span 
+                          key={idx} 
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
                           {specialty}
                         </span>
                       ))}
