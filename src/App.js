@@ -8,7 +8,7 @@ const processTherapists = (data) => {
   data.forEach(row => {
     const name = row['Therapist Name']?.trim();
     const specialty = row['Specialty Group']?.trim();
-    const location = row['Clinic 1 Fixed']?.trim();
+    const location = row['Clinic Name']?.trim();
     const address = row['Address']?.trim();
     const notes = row['Notes']?.trim(); // Add notes field
     
